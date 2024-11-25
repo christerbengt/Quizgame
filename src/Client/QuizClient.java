@@ -27,6 +27,7 @@ public class QuizClient {
     private javax.swing.Timer questionTimer;
     private final int TIMER_DELAY = 1000;
     private int timeLeft;
+    private int currentRound = 1;
 
     public QuizClient() {
         initializeConnection();
@@ -103,18 +104,23 @@ public class QuizClient {
         questionPanel = new JPanel(new BorderLayout(10, 10));
         questionPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
+        // Top panel for round information and timer
+        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 5));
+        JLabel roundLabel = new JLabel("Round " + currentRound + " of 3", SwingConstants.CENTER);
+        roundLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        timerLabel = new JLabel("Time: 30");
+        timerLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        scoreLabel = new JLabel("Score: 0");
+        scoreLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+
+        topPanel.add(roundLabel);
+        topPanel.add(timerLabel);
+        topPanel.add(scoreLabel);
+
         // Question display
         questionLabel = new JLabel();
         questionLabel.setHorizontalAlignment(JLabel.CENTER);
         questionLabel.setFont(new Font("Arial", Font.BOLD, 16));
-
-        // Timer and score
-        JPanel infoPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        timerLabel = new JLabel("Time: 30");
-        scoreLabel = new JLabel("Score: 0");
-        infoPanel.add(timerLabel);
-        infoPanel.add(Box.createHorizontalStrut(20));
-        infoPanel.add(scoreLabel);
 
         // Answer buttons
         JPanel buttonPanel = new JPanel(new GridLayout(2, 2, 10, 10));
@@ -128,7 +134,7 @@ public class QuizClient {
             buttonPanel.add(button);
         }
 
-        questionPanel.add(infoPanel, BorderLayout.NORTH);
+        questionPanel.add(topPanel, BorderLayout.NORTH);
         questionPanel.add(questionLabel, BorderLayout.CENTER);
         questionPanel.add(buttonPanel, BorderLayout.SOUTH);
     }
@@ -155,6 +161,7 @@ public class QuizClient {
                 switch (message.getType()) {
                     case GAME_START -> {
                         System.out.println("Game starting");
+                        currentRound = 1;
                         mainPanel.removeAll();
                         createQuestionPanel();
                         mainPanel.add(questionPanel);
@@ -162,12 +169,15 @@ public class QuizClient {
                         mainPanel.repaint();
                     }
                     case ROUND_START -> {
-                        System.out.println("Round starting");
+                        System.out.println("Round " + currentRound + " starting");
                         currentQuestions = (List<Question>) message.getContent();
                         currentQuestionIndex = 0;
                         displayQuestion();
                     }
-                    case ROUND_RESULT -> handleRoundResult((RoundResult) message.getContent());
+                    case ROUND_RESULT -> {
+                        handleRoundResult((RoundResult) message.getContent());
+                        currentRound++;
+                    }
                     case GAME_END -> handleGameEnd((GameResult) message.getContent());
                 }
             } catch (Exception e) {
@@ -180,12 +190,18 @@ public class QuizClient {
     private void displayQuestion() {
         if (currentQuestionIndex < currentQuestions.size()) {
             Question question = currentQuestions.get(currentQuestionIndex);
-            questionLabel.setText(question.getText());
+
+            // Update question number display
+            questionLabel.setText("<html><div style='text-align: center'>Question " +
+                    (currentQuestionIndex + 1) + " of " + currentQuestions.size() +
+                    "<br><br>" + question.getText() + "</div></html>");
+
             List<String> options = question.getOptions();
             for (int i = 0; i < options.size(); i++) {
-                answerButtons.get(i).setText(options.get(i));
-                answerButtons.get(i).setEnabled(true);
-                answerButtons.get(i).setBackground(null);
+                JButton button = answerButtons.get(i);
+                button.setText(options.get(i));
+                button.setEnabled(true);
+                button.setBackground(null);
             }
             startTimer();
         }
@@ -259,13 +275,35 @@ public class QuizClient {
     private void handleRoundResult(RoundResult result) {
         mainPanel.removeAll();
         JPanel resultPanel = new JPanel(new BorderLayout());
-        resultPanel.add(new JLabel("Round Complete!", SwingConstants.CENTER), BorderLayout.NORTH);
+        resultPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        JPanel scoresPanel = new JPanel(new GridLayout(0, 1));
-        result.getScores().forEach((player, score) ->
-                scoresPanel.add(new JLabel(player + ": " + score, SwingConstants.CENTER)));
+        // Add round result title
+        JLabel titleLabel = new JLabel("Round " + currentRound + " Complete!", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        resultPanel.add(titleLabel, BorderLayout.NORTH);
 
-        resultPanel.add(scoresPanel, BorderLayout.CENTER);
+        // Display scores
+        JPanel scoresPanel = new JPanel(new GridLayout(0, 1, 5, 5));
+        result.getScores().forEach((player, score) -> {
+            JLabel scoreLabel = new JLabel(player + ": " + score, SwingConstants.CENTER);
+            scoreLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+            scoresPanel.add(scoreLabel);
+        });
+
+        // Add padding around scores
+        JPanel paddedScoresPanel = new JPanel(new BorderLayout());
+        paddedScoresPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
+        paddedScoresPanel.add(scoresPanel, BorderLayout.CENTER);
+
+        resultPanel.add(paddedScoresPanel, BorderLayout.CENTER);
+
+        // Add "Waiting for next round" message if not the final round
+        if (currentRound < 3) {
+            JLabel waitingLabel = new JLabel("Waiting for next round...", SwingConstants.CENTER);
+            waitingLabel.setFont(new Font("Arial", Font.ITALIC, 14));
+            resultPanel.add(waitingLabel, BorderLayout.SOUTH);
+        }
+
         mainPanel.add(resultPanel);
         mainPanel.revalidate();
         mainPanel.repaint();
@@ -274,35 +312,61 @@ public class QuizClient {
     private void handleGameEnd(GameResult result) {
         mainPanel.removeAll();
         JPanel endPanel = new JPanel(new BorderLayout());
-        endPanel.add(new JLabel("Game Over!", SwingConstants.CENTER), BorderLayout.NORTH);
+        endPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        JPanel finalScoresPanel = new JPanel(new GridLayout(0, 1));
-        result.getScores().forEach((player, score) ->
-                finalScoresPanel.add(new JLabel(player + ": " + score, SwingConstants.CENTER)));
+        // Game Over title
+        JLabel titleLabel = new JLabel("Game Over!", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        titleLabel.setForeground(new Color(44, 62, 80));
+        endPanel.add(titleLabel, BorderLayout.NORTH);
 
+        // Final scores panel
+        JPanel finalScoresPanel = new JPanel(new GridLayout(0, 1, 10, 10));
+        finalScoresPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
+
+        // Add final scores with styled labels
+        result.getScores().forEach((player, score) -> {
+            JLabel scoreLabel = new JLabel(player + ": " + score, SwingConstants.CENTER);
+            scoreLabel.setFont(new Font("Arial", Font.BOLD, 18));
+            finalScoresPanel.add(scoreLabel);
+        });
+
+        // Add winner announcement
         if (result.getWinnerUsername() != null) {
-            finalScoresPanel.add(new JLabel("Winner: " + result.getWinnerUsername(),
-                    SwingConstants.CENTER));
+            JLabel winnerLabel = new JLabel("Winner: " + result.getWinnerUsername(), SwingConstants.CENTER);
+            winnerLabel.setFont(new Font("Arial", Font.BOLD, 20));
+            winnerLabel.setForeground(new Color(39, 174, 96));
+            finalScoresPanel.add(winnerLabel);
 
-            // Add some visual flair for the winner
             if (result.getWinnerUsername().equals(username)) {
                 JLabel congratsLabel = new JLabel("Congratulations, you won!", SwingConstants.CENTER);
-                congratsLabel.setFont(new Font("Arial", Font.BOLD, 16));
-                congratsLabel.setForeground(new Color(0, 150, 0));
+                congratsLabel.setFont(new Font("Arial", Font.BOLD, 22));
+                congratsLabel.setForeground(new Color(39, 174, 96));
                 finalScoresPanel.add(congratsLabel);
             }
         } else {
-            finalScoresPanel.add(new JLabel("It's a tie!", SwingConstants.CENTER));
+            JLabel tieLabel = new JLabel("It's a tie!", SwingConstants.CENTER);
+            tieLabel.setFont(new Font("Arial", Font.BOLD, 20));
+            tieLabel.setForeground(new Color(41, 128, 185));
+            finalScoresPanel.add(tieLabel);
         }
 
         endPanel.add(finalScoresPanel, BorderLayout.CENTER);
 
+        // Play Again button
         JButton newGameButton = new JButton("Play Again");
+        newGameButton.setFont(new Font("Arial", Font.BOLD, 16));
+        newGameButton.setBackground(new Color(52, 152, 219));
+        newGameButton.setForeground(Color.WHITE);
+        newGameButton.setFocusPainted(false);
         newGameButton.addActionListener(e -> {
             frame.dispose();
             new QuizClient();
         });
-        endPanel.add(newGameButton, BorderLayout.SOUTH);
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        buttonPanel.add(newGameButton);
+        endPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         mainPanel.add(endPanel);
         mainPanel.revalidate();
@@ -311,7 +375,7 @@ public class QuizClient {
 
     private void sendMessage(Message message) throws IOException {
         out.writeObject(message);
-        out.reset(); // Prevent object caching
+        out.reset();
         out.flush();
     }
 
