@@ -3,11 +3,13 @@ package Server;
 import java.io.*;
 import java.net.*;
 import java.util.concurrent.*;
+import java.util.*;
 
 public class Server {
     private static final int PORT = 12345;
     private final ConcurrentHashMap<String, PlayerHandler> players = new ConcurrentHashMap<>();
     private final ConcurrentLinkedQueue<PlayerHandler> waitingPlayers = new ConcurrentLinkedQueue<>();
+    private final Set<Game> activeGames = Collections.newSetFromMap(new ConcurrentHashMap<>()); // Added this line
     private final GameProperties gameProperties;
     private final QuestionDatabase questionDB;
 
@@ -19,10 +21,12 @@ public class Server {
     public void start() {
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
             System.out.println("Server started on port " + PORT);
+            System.out.println("Waiting for players to connect...");
 
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                System.out.println("New client connected: " + clientSocket.getInetAddress().getHostAddress());
+                System.out.println("New client connected from: " +
+                        clientSocket.getInetAddress().getHostAddress());
                 PlayerHandler playerHandler = new PlayerHandler(clientSocket, this);
                 new Thread(playerHandler).start();
             }
@@ -36,7 +40,7 @@ public class Server {
         System.out.println("Registering player: " + username);
         players.put(username, handler);
         waitingPlayers.offer(handler);
-        System.out.println("Waiting players: " + waitingPlayers.size());
+        System.out.println("Current waiting players: " + waitingPlayers.size());
         matchPlayers();
     }
 
@@ -46,12 +50,27 @@ public class Server {
             PlayerHandler player2 = waitingPlayers.poll();
 
             if (player1 != null && player2 != null) {
-                System.out.println("Matching players: " + player1.getUsername() + " vs " + player2.getUsername());
+                System.out.println("Matching players for a new game: " +
+                        player1.getUsername() + " vs " + player2.getUsername());
                 Game game = new Game(player1, player2, gameProperties, questionDB);
-                player1.setCurrentGame(game);
-                player2.setCurrentGame(game);
-                new Thread(() -> game.start()).start();
+                activeGames.add(game);
+                System.out.println("Active games: " + activeGames.size());
+                new Thread(() -> {
+                    game.start();
+                    activeGames.remove(game);
+                    System.out.println("Game completed. Active games: " + activeGames.size());
+                }).start();
             }
+        }
+    }
+
+    public void removePlayer(PlayerHandler player) {
+        if (player.getUsername() != null) {
+            players.remove(player.getUsername());
+            waitingPlayers.remove(player);
+            System.out.println("Player removed: " + player.getUsername());
+            System.out.println("Current players: " + players.size());
+            System.out.println("Waiting players: " + waitingPlayers.size());
         }
     }
 

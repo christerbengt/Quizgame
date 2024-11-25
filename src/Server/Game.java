@@ -54,7 +54,7 @@ public class Game {
         Round round = rounds.get(currentRoundIndex);
         List<Question> roundQuestions = round.getQuestions();
 
-        System.out.println("Starting round " + (currentRoundIndex + 1));
+        System.out.println("Starting round " + (currentRoundIndex + 1) + " of " + rounds.size());
         System.out.println("Number of questions in round: " + roundQuestions.size());
 
         // Debug print questions
@@ -73,18 +73,6 @@ public class Game {
         player2.sendMessage(roundStartMessage);
     }
 
-    public void handleMessage(PlayerHandler player, Message message) throws IOException {
-        System.out.println("Handling message from " + player.getUsername() + ": " + message.getType());
-        switch (message.getType()) {
-            case ANSWER:
-                handleAnswer(player, message);
-                break;
-            case ROUND_COMPLETE:
-                handleRoundComplete(player);
-                break;
-        }
-    }
-
     private void handleAnswer(PlayerHandler player, Message message) throws IOException {
         Round currentRound = rounds.get(currentRoundIndex);
         Answer answer = (Answer) message.getContent();
@@ -94,16 +82,37 @@ public class Game {
 
     private void handleRoundComplete(PlayerHandler player) throws IOException {
         Round currentRound = rounds.get(currentRoundIndex);
-        System.out.println("Round complete signal from " + player.getUsername());
+        System.out.println("Round complete signal from " + player.getUsername() +
+                " for round " + (currentRoundIndex + 1));
+
         if (currentRound.isComplete()) {
-            System.out.println("Round " + currentRoundIndex + " is complete");
+            System.out.println("Both players completed round " + (currentRoundIndex + 1));
             sendRoundResults();
+
             if (currentRoundIndex < rounds.size() - 1) {
                 currentRoundIndex++;
+                System.out.println("Moving to round " + (currentRoundIndex + 1));
                 startNextRound();
             } else {
+                System.out.println("All rounds complete, ending game");
                 endGame();
             }
+        } else {
+            System.out.println("Waiting for other player to complete round " + (currentRoundIndex + 1));
+        }
+    }
+
+    public void handleMessage(PlayerHandler player, Message message) throws IOException {
+        System.out.println("Handling message from " + player.getUsername() + ": " + message.getType());
+        switch (message.getType()) {
+            case ANSWER:
+                handleAnswer(player, message);
+                break;
+            case ROUND_COMPLETE:
+                handleRoundComplete(player);
+                break;
+            default:
+                System.out.println("Unexpected message type: " + message.getType());
         }
     }
 
