@@ -6,6 +6,8 @@ import Server.*;
 import javax.swing.*;
 import javax.swing.Timer;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -102,6 +104,45 @@ public class QuizClient {
         mainPanel.revalidate();
         mainPanel.repaint();
     }
+
+    // Method to display the category panel
+    private void showCategoryPanel() {
+        mainPanel.removeAll();
+
+        JPanel categoryPanel = new JPanel(new BorderLayout());
+        JPanel centerPanel1 = new JPanel(new GridBagLayout());
+        JPanel answerPanel = new JPanel(new GridLayout(4, 1, 20, 20)); // 4 buttons in a single column with spacing
+
+        List<Category> categories = Category.randomCategories(); // Get 4 random categories
+
+        // Create buttons for each category and add them to the panel
+        ArrayList<JButton> answerButtons = new ArrayList<>();
+        for (Category category : categories) {
+            JButton categoryButton = new JButton(category.toString());
+            categoryButton.addActionListener((ActionListener) this); // Set action listener
+            answerButtons.add(categoryButton);
+        }
+
+        for (JButton button : answerButtons) {
+            answerPanel.add(button);
+        }
+
+        centerPanel1.add(answerPanel);
+        categoryPanel.add(centerPanel1, BorderLayout.CENTER);
+
+        // Create a label for the category selection prompt
+        JPanel questionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JLabel questionLabel = new JLabel("Pick a category:", SwingConstants.CENTER);
+        questionLabel.setFont(new Font("Arial", Font.PLAIN, 18));
+        questionPanel.add(questionLabel);
+        categoryPanel.add(questionPanel, BorderLayout.NORTH);
+
+        mainPanel.add(categoryPanel, BorderLayout.CENTER);
+        mainPanel.revalidate();
+        mainPanel.repaint();
+    }
+
+
 
     private void createQuestionPanel() {
         questionPanel = new JPanel(new BorderLayout(10, 10));
