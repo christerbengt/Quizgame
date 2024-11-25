@@ -17,7 +17,6 @@ public class Game {
         this.properties = properties;
         this.questionDB = questionDB;
 
-        // Set the current game for both players immediately
         player1.setCurrentGame(this);
         player2.setCurrentGame(this);
 
@@ -87,14 +86,29 @@ public class Game {
 
         if (currentRound.isComplete()) {
             System.out.println("Both players completed round " + (currentRoundIndex + 1));
+
+            // Send round results
             sendRoundResults();
 
+            // Wait for a short delay before starting next round
+            try {
+                Thread.sleep(3000); // 3 second delay
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+
+            // Check if there are more rounds
             if (currentRoundIndex < rounds.size() - 1) {
                 currentRoundIndex++;
                 System.out.println("Moving to round " + (currentRoundIndex + 1));
                 startNextRound();
             } else {
                 System.out.println("All rounds complete, ending game");
+                try {
+                    Thread.sleep(2000); // 2 second delay before ending
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
                 endGame();
             }
         } else {
@@ -105,14 +119,9 @@ public class Game {
     public void handleMessage(PlayerHandler player, Message message) throws IOException {
         System.out.println("Handling message from " + player.getUsername() + ": " + message.getType());
         switch (message.getType()) {
-            case ANSWER:
-                handleAnswer(player, message);
-                break;
-            case ROUND_COMPLETE:
-                handleRoundComplete(player);
-                break;
-            default:
-                System.out.println("Unexpected message type: " + message.getType());
+            case ANSWER -> handleAnswer(player, message);
+            case ROUND_COMPLETE -> handleRoundComplete(player);
+            default -> System.out.println("Unexpected message type: " + message.getType());
         }
     }
 
@@ -120,6 +129,8 @@ public class Game {
         Round round = rounds.get(currentRoundIndex);
         RoundResult result = round.getResult();
         Message resultMessage = new Message(MessageType.ROUND_RESULT, result);
+
+        System.out.println("Sending round " + (currentRoundIndex + 1) + " results to players");
         player1.sendMessage(resultMessage);
         player2.sendMessage(resultMessage);
     }

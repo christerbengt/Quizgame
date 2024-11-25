@@ -2,6 +2,7 @@ package Client;
 
 import Server.*;
 import javax.swing.*;
+import javax.swing.Timer;
 import java.awt.*;
 import java.io.*;
 import java.net.*;
@@ -294,19 +295,64 @@ public class QuizClient {
         JPanel paddedScoresPanel = new JPanel(new BorderLayout());
         paddedScoresPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
         paddedScoresPanel.add(scoresPanel, BorderLayout.CENTER);
-
         resultPanel.add(paddedScoresPanel, BorderLayout.CENTER);
 
-        // Add "Waiting for next round" message if not the final round
+        // Add waiting panel if not the final round
         if (currentRound < 3) {
-            JLabel waitingLabel = new JLabel("Waiting for next round...", SwingConstants.CENTER);
+            JPanel waitingPanel = new JPanel();
+            waitingPanel.setLayout(new BoxLayout(waitingPanel, BoxLayout.Y_AXIS));
+
+            // Create a panel for the waiting message and dots
+            JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+            JLabel waitingLabel = new JLabel("Waiting for next round");
             waitingLabel.setFont(new Font("Arial", Font.ITALIC, 14));
-            resultPanel.add(waitingLabel, BorderLayout.SOUTH);
+            JLabel dotsLabel = new JLabel("...");
+            dotsLabel.setFont(new Font("Arial", Font.ITALIC, 14));
+            messagePanel.add(waitingLabel);
+            messagePanel.add(dotsLabel);
+
+            // Create loading bar panel
+            JProgressBar progressBar = new JProgressBar();
+            progressBar.setIndeterminate(true);
+            progressBar.setPreferredSize(new Dimension(200, 20));
+            progressBar.setString("Waiting for other player");
+            progressBar.setStringPainted(true);
+
+            // Add components to waiting panel
+            waitingPanel.add(messagePanel);
+            waitingPanel.add(Box.createVerticalStrut(10));
+            waitingPanel.add(progressBar);
+
+            // Animate the dots
+            Timer dotTimer = new Timer(500, e -> {
+                String dots = dotsLabel.getText();
+                dotsLabel.setText(dots.length() >= 3 ? "." : dots + ".");
+            });
+            dotTimer.start();
+
+            // Add the waiting panel to the result panel
+            JPanel spacedWaitingPanel = new JPanel(new BorderLayout());
+            spacedWaitingPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+            spacedWaitingPanel.add(waitingPanel, BorderLayout.CENTER);
+            resultPanel.add(spacedWaitingPanel, BorderLayout.SOUTH);
         }
 
         mainPanel.add(resultPanel);
         mainPanel.revalidate();
         mainPanel.repaint();
+
+        // If this was the final round, show a countdown to game end
+        if (currentRound == 3) {
+            Timer endTimer = new Timer(2000, e -> {
+                JLabel endingLabel = new JLabel("Calculating final results...", SwingConstants.CENTER);
+                endingLabel.setFont(new Font("Arial", Font.BOLD, 16));
+                resultPanel.add(endingLabel, BorderLayout.SOUTH);
+                mainPanel.revalidate();
+                mainPanel.repaint();
+            });
+            endTimer.setRepeats(false);
+            endTimer.start();
+        }
     }
 
     private void handleGameEnd(GameResult result) {
