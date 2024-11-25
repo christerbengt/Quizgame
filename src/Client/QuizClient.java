@@ -105,40 +105,67 @@ public class QuizClient {
         questionPanel = new JPanel(new BorderLayout(10, 10));
         questionPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Top panel for round information and timer
-        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 5));
+        // Create header panel
+        JPanel headerPanel = new JPanel(new BorderLayout());
+
+        // Round indicator
         JLabel roundLabel = new JLabel("Round " + currentRound + " of 3", SwingConstants.CENTER);
-        roundLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        roundLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        roundLabel.setForeground(new Color(44, 62, 80));
+        headerPanel.add(roundLabel, BorderLayout.NORTH);
+
+        // Timer and score panel
+        JPanel infoPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 5));
         timerLabel = new JLabel("Time: 30");
         timerLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         scoreLabel = new JLabel("Score: 0");
         scoreLabel.setFont(new Font("Arial", Font.PLAIN, 14));
 
-        topPanel.add(roundLabel);
-        topPanel.add(timerLabel);
-        topPanel.add(scoreLabel);
+        infoPanel.add(timerLabel);
+        infoPanel.add(Box.createHorizontalStrut(20));
+        infoPanel.add(scoreLabel);
+        headerPanel.add(infoPanel, BorderLayout.CENTER);
+
+        // Add padding to header
+        headerPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
 
         // Question display
         questionLabel = new JLabel();
         questionLabel.setHorizontalAlignment(JLabel.CENTER);
         questionLabel.setFont(new Font("Arial", Font.BOLD, 16));
 
-        // Answer buttons
+        // Answer buttons panel
         JPanel buttonPanel = new JPanel(new GridLayout(2, 2, 10, 10));
         answerButtons = new ArrayList<>();
+
         for (int i = 0; i < 4; i++) {
             JButton button = new JButton();
             button.setFont(new Font("Arial", Font.PLAIN, 14));
+            button.setBackground(new Color(240, 240, 240));
+            button.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(new Color(200, 200, 200)),
+                    BorderFactory.createEmptyBorder(10, 10, 10, 10)
+            ));
             final int index = i;
             button.addActionListener(e -> handleAnswer(index));
             answerButtons.add(button);
             buttonPanel.add(button);
         }
 
-        questionPanel.add(topPanel, BorderLayout.NORTH);
+        // Add everything to the question panel
+        questionPanel.add(headerPanel, BorderLayout.NORTH);
         questionPanel.add(questionLabel, BorderLayout.CENTER);
-        questionPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        // Add padding around button panel
+        JPanel paddedButtonPanel = new JPanel(new BorderLayout());
+        paddedButtonPanel.setBorder(BorderFactory.createEmptyBorder(15, 0, 0, 0));
+        paddedButtonPanel.add(buttonPanel, BorderLayout.CENTER);
+        questionPanel.add(paddedButtonPanel, BorderLayout.SOUTH);
+
+        // Set background color for the whole panel
+        questionPanel.setBackground(Color.WHITE);
     }
+
 
     private void startMessageListener() {
         new Thread(() -> {
@@ -173,13 +200,26 @@ public class QuizClient {
                         System.out.println("Round " + currentRound + " starting");
                         currentQuestions = (List<Question>) message.getContent();
                         currentQuestionIndex = 0;
+
+                        // Clear the main panel and create a new question panel
+                        mainPanel.removeAll();
+                        createQuestionPanel(); // This will create a fresh question panel
+                        mainPanel.add(questionPanel);
+                        mainPanel.revalidate();
+                        mainPanel.repaint();
+
+                        // Start displaying questions
                         displayQuestion();
                     }
                     case ROUND_RESULT -> {
+                        System.out.println("Received round " + currentRound + " results");
                         handleRoundResult((RoundResult) message.getContent());
                         currentRound++;
                     }
-                    case GAME_END -> handleGameEnd((GameResult) message.getContent());
+                    case GAME_END -> {
+                        System.out.println("Game ending");
+                        handleGameEnd((GameResult) message.getContent());
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -192,9 +232,9 @@ public class QuizClient {
         if (currentQuestionIndex < currentQuestions.size()) {
             Question question = currentQuestions.get(currentQuestionIndex);
 
-            // Update question number display
-            questionLabel.setText("<html><div style='text-align: center'>Question " +
-                    (currentQuestionIndex + 1) + " of " + currentQuestions.size() +
+            // Update question display with question number
+            questionLabel.setText("<html><div style='text-align: center; padding: 10px;'>" +
+                    "Question " + (currentQuestionIndex + 1) + " of " + currentQuestions.size() +
                     "<br><br>" + question.getText() + "</div></html>");
 
             List<String> options = question.getOptions();
@@ -202,7 +242,7 @@ public class QuizClient {
                 JButton button = answerButtons.get(i);
                 button.setText(options.get(i));
                 button.setEnabled(true);
-                button.setBackground(null);
+                button.setBackground(new Color(240, 240, 240));
             }
             startTimer();
         }
