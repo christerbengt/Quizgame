@@ -1,5 +1,8 @@
 package Server;
 
+import Pojos.Message;
+import Pojos.MessageType;
+
 import java.io.*;
 import java.net.*;
 

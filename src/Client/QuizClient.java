@@ -1,5 +1,7 @@
 package Client;
 
+import Pojos.Message;
+import Pojos.MessageType;
 import Server.*;
 import javax.swing.*;
 import javax.swing.Timer;

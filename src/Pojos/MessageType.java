@@ -1,4 +1,4 @@
-package Server;
+package Pojos;
 
 public enum MessageType {
     LOGIN,
