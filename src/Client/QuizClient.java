@@ -12,7 +12,7 @@ import java.util.*;
 import java.util.List;
 
 public class QuizClient {
-    private final String SERVER_ADDRESS = "localhost";
+    private final String SERVER_ADDRESS = "192.168.68.61"; // Christers IPv4
     private final int SERVER_PORT = 12345;
     private ObjectOutputStream out;
     private ObjectInputStream in;
