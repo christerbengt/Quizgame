@@ -6,8 +6,6 @@ import Server.*;
 import javax.swing.*;
 import javax.swing.Timer;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -106,16 +104,14 @@ public class QuizClient {
     }
 
     // Method to display the category panel
-    private void showCategoryPanel() {
+    private void showCategoryPanel(List<Category> categories) {
         mainPanel.removeAll();
 
         JPanel categoryPanel = new JPanel(new BorderLayout());
         JPanel centerPanel1 = new JPanel(new GridBagLayout());
         JPanel answerPanel = new JPanel(new GridLayout(4, 1, 20, 20)); // 4 buttons in a single column with spacing
 
-        List<Category> categories = Category.randomCategories(); // Get 4 random categories
 
-        // Create buttons for each category and add them to the panel
         ArrayList<JButton> answerButtons = new ArrayList<>();
         for (Category category : categories) {
             JButton categoryButton = new JButton(category.toString());
@@ -245,6 +241,12 @@ public class QuizClient {
                         mainPanel.add(questionPanel);
                         mainPanel.revalidate();
                         mainPanel.repaint();
+                    }
+                    case CATEGORY_SELECTED -> {
+                        // Extract the categories from the message
+                        List<Category> categories = (List<Category>) message.getContent();
+                        // Display the categories to the player
+                        showCategoryPanel(categories);
                     }
                     case ROUND_START -> {
                         System.out.println("Round " + currentRound + " starting");
