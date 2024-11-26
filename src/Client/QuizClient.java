@@ -55,10 +55,36 @@ public class QuizClient {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(600, 400);
 
+        JMenuBar menuBar = new JMenuBar();
+        JMenu settingsMenu = new JMenu("Settings");
+        JMenuItem redItem = new JMenuItem("Red");
+        JMenuItem greenItem = new JMenuItem("Green");
+        JMenuItem blueItem = new JMenuItem("Blue");
+
+        redItem.addActionListener(e -> changePanelBackground(Color.RED));
+        greenItem.addActionListener(e -> changePanelBackground(Color.GREEN));
+        blueItem.addActionListener(e -> changePanelBackground(Color.BLUE));
+
+        settingsMenu.add(redItem);
+        settingsMenu.add(greenItem);
+        settingsMenu.add(blueItem);
+
+        menuBar.add(settingsMenu);
+        frame.setJMenuBar(menuBar);
+
         mainPanel = new JPanel(new BorderLayout());
         createLoginPanel();
         frame.add(mainPanel);
         frame.setVisible(true);
+    }
+
+    private void changePanelBackground(Color color) {
+        mainPanel.setBackground(color);
+        if (questionPanel != null) {
+            questionPanel.setBackground(color);
+        }
+        frame.revalidate();
+        frame.repaint();
     }
 
     private void createLoginPanel() {
