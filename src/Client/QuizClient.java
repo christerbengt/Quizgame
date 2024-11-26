@@ -119,7 +119,7 @@ public class QuizClient {
         ArrayList<JButton> answerButtons = new ArrayList<>();
         for (Category category : categories) {
             JButton categoryButton = new JButton(category.toString());
-            categoryButton.addActionListener((ActionListener) this); // Set action listener
+            categoryButton.addActionListener(e -> handleCategorySelection(category)); // Set action listener
             answerButtons.add(categoryButton);
         }
 
@@ -130,7 +130,6 @@ public class QuizClient {
         centerPanel1.add(answerPanel);
         categoryPanel.add(centerPanel1, BorderLayout.CENTER);
 
-        // Create a label for the category selection prompt
         JPanel questionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         JLabel questionLabel = new JLabel("Pick a category:", SwingConstants.CENTER);
         questionLabel.setFont(new Font("Arial", Font.PLAIN, 18));
@@ -140,6 +139,14 @@ public class QuizClient {
         mainPanel.add(categoryPanel, BorderLayout.CENTER);
         mainPanel.revalidate();
         mainPanel.repaint();
+    }
+
+    private void handleCategorySelection(Category category) {
+        try {
+            sendMessage(new Message(MessageType.CATEGORY_SELECTED, category));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 
