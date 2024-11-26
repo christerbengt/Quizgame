@@ -6,7 +6,7 @@ import java.util.concurrent.*;
 import java.util.*;
 
 public class Server {
-    private static final int PORT = 12649;
+    private static final int PORT = 55555;
     private final ConcurrentHashMap<String, PlayerHandler> players = new ConcurrentHashMap<>();
     private final ConcurrentLinkedQueue<PlayerHandler> waitingPlayers = new ConcurrentLinkedQueue<>();
     private final Set<Game> activeGames = Collections.newSetFromMap(new ConcurrentHashMap<>()); // Added this line

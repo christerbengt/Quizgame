@@ -10,10 +10,12 @@ public class Round implements Serializable {
 
     private final List<Question> questions;
     private final Map<PlayerHandler, List<Answer>> playerAnswers;
+    private final Category category;
 
-    public Round(List<Question> questions) {
+    public Round(List<Question> questions, Category category) {
         this.questions = new ArrayList<>(questions); // Create new ArrayList
-        this.playerAnswers = new HashMap<>();
+      this.category = category;
+      this.playerAnswers = new HashMap<>();
     }
 
     public List<Question> getQuestions() {
@@ -55,5 +57,10 @@ public class Round implements Serializable {
             }
         }
         return score;
+    }
+
+    public void setQuestions(List<Question> questions) {
+        this.questions.clear();
+        this.questions.addAll(questions);
     }
 }

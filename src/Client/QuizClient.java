@@ -12,8 +12,8 @@ import java.util.*;
 import java.util.List;
 
 public class QuizClient {
-    private final String SERVER_ADDRESS = "176.10.254.8"; // Christers IPv4
-    private final int SERVER_PORT = 12649;
+    private static final String SERVER_ADDRESS = "127.0.0.1";
+    private static final int SERVER_PORT = 55555;
     private ObjectOutputStream out;
     private ObjectInputStream in;
     private Socket socket;
@@ -243,9 +243,7 @@ public class QuizClient {
                         mainPanel.repaint();
                     }
                     case CATEGORY_SELECTED -> {
-                        // Extract the categories from the message
-                        List<Category> categories = (List<Category>) message.getContent();
-                        // Display the categories to the player
+                        List<Category> categories =  Category.randomCategories();
                         showCategoryPanel(categories);
                     }
                     case ROUND_START -> {

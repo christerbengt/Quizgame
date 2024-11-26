@@ -13,6 +13,7 @@ public class Game {
     private final QuestionDatabase questionDB;
     private final List<Round> rounds = new ArrayList<>();
     private int currentRoundIndex = 0;
+    private boolean player1Turn = true;
 
     public Game(PlayerHandler player1, PlayerHandler player2, GameProperties properties, QuestionDatabase questionDB) {
         this.player1 = player1;
@@ -41,7 +42,7 @@ public class Game {
     private void initializeGame() {
         System.out.println("Initializing game with " + properties.getRoundCount() + " rounds");
         for (int i = 0; i < properties.getRoundCount(); i++) {
-            rounds.add(new Round(questionDB.getQuestionsForRound(properties.getQuestionsPerRound())));
+            rounds.add(new Round(new ArrayList<>(), null));
         }
     }
 
@@ -52,26 +53,57 @@ public class Game {
         player2.sendMessage(gameStartMessage);
     }
 
+
     private void startNextRound() throws IOException {
         Round round = rounds.get(currentRoundIndex);
         List<Question> roundQuestions = round.getQuestions();
 
+        PlayerHandler categoryChooser;
+
+        if (player1Turn) {
+            categoryChooser = player1;
+        } else {
+            categoryChooser = player2;
+        }
+
+
+
         System.out.println("Starting round " + (currentRoundIndex + 1) + " of " + rounds.size());
         System.out.println("Number of questions in round: " + roundQuestions.size());
 
-        // Debug print questions
-        for (int i = 0; i < roundQuestions.size(); i++) {
-            Question q = roundQuestions.get(i);
-            System.out.println("Question " + (i + 1) + ": " + q.getText());
-            System.out.println("Options: " + q.getOptions());
+        Message categoryChoiceMessage = new Message(MessageType.CATEGORY_SELECTED, null);
+        categoryChooser.sendMessage(categoryChoiceMessage);
+
+        player1Turn = !player1Turn;
+
+    }
+
+    private void handleCategorySelection(PlayerHandler player, Category selectedCategory) {
+
+        if ((player1Turn && player.equals(player1)) || (!player1Turn && player.equals(player2))) {
+            System.out.println("Category chosen by " + player.getUsername() + ": " + selectedCategory);
+
+            List<Question> questions = questionDB.getQuestionsForRound(selectedCategory, properties.getQuestionsPerRound());
+            rounds.get(currentRoundIndex).setQuestions(questions);
+            try {
+                startNextRoundWithQuestions(questions);
+            } catch (IOException e) {
+                System.err.println("Error starting round: " + e.getMessage());
+                e.printStackTrace();
+            }
+
+            player1Turn = !player1Turn;
+
+        } else {
+            System.out.println("Unexpected category selection from player: " + player.getUsername());
         }
+    }
 
-        Message roundStartMessage = new Message(MessageType.ROUND_START, roundQuestions);
+    private void startNextRoundWithQuestions(List<Question> questions) throws IOException {
+        System.out.println("Starting round with category-chosen questions");
+        Message roundStartMessage = new Message(MessageType.ROUND_START, questions);
 
-        System.out.println("Sending round start message to " + player1.getUsername());
         player1.sendMessage(roundStartMessage);
-
-        System.out.println("Sending round start message to " + player2.getUsername());
         player2.sendMessage(roundStartMessage);
     }
 
