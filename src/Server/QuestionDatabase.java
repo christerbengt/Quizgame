@@ -106,8 +106,7 @@ public class QuestionDatabase {
         System.out.println("Added default question for category " + category + ": " + questionText);
     }
 
-    public List<Question> getQuestionsForRound(int count) {
-        Category category = getRandomCategory();
+    public List<Question> getQuestionsForRound(Category category, int count) {
         List<Question> categoryQuestions = new ArrayList<>(questions.get(category));
 
         if (categoryQuestions.isEmpty()) {
@@ -116,7 +115,6 @@ public class QuestionDatabase {
         }
 
         Collections.shuffle(categoryQuestions);
-        // Create a new ArrayList instead of using subList
         List<Question> selectedQuestions = new ArrayList<>();
         for (int i = 0; i < Math.min(count, categoryQuestions.size()); i++) {
             selectedQuestions.add(categoryQuestions.get(i));
