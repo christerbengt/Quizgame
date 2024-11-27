@@ -124,7 +124,8 @@ public class QuestionDatabase {
         return selectedQuestions;
     }
 
-    private List<Question> loadEmergencyQuestions(int count) {
+    public List<Question> loadEmergencyQuestions(int count) {
+        System.out.println("Loading emergency questions.");
         List<Question> emergencyQuestions = new ArrayList<>();
         for (int i = 0; i < count; i++) {
             emergencyQuestions.add(new Question(

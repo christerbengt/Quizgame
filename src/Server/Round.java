@@ -13,26 +13,56 @@ public class Round implements Serializable {
     private final Category category;
 
     public Round(List<Question> questions, Category category) {
-        this.questions = new ArrayList<>(questions); // Create new ArrayList
-      this.category = category;
-      this.playerAnswers = new HashMap<>();
+        this.questions = new ArrayList<>(questions); // Create new ArrayList with the questions
+        this.category = category;
+        this.playerAnswers = new HashMap<>();
+        System.out.println("Created new round with " + questions.size() + " questions");
     }
 
     public List<Question> getQuestions() {
-        return new ArrayList<>(questions); // Return a copy
+        return new ArrayList<>(questions);
+    }
+
+    public boolean isComplete() {
+        System.out.println("Checking round completion:");
+        System.out.println("- Total questions: " + questions.size());
+        System.out.println("- Players answered: " + playerAnswers.size());
+
+        if (questions.isEmpty()) {
+            System.out.println("Warning: Round has no questions!");
+            return false;
+        }
+
+        boolean bothPlayersAnswered = playerAnswers.size() == 2;
+        boolean allQuestionsAnswered = playerAnswers.values().stream()
+                .allMatch(answers -> answers.size() == questions.size());
+
+        System.out.println("- Both players answered: " + bothPlayersAnswered);
+        System.out.println("- All questions answered: " + allQuestionsAnswered);
+
+        return bothPlayersAnswered && allQuestionsAnswered;
+    }
+
+    public int getPlayerAnswersCount() {
+        return playerAnswers.size();
     }
 
     public void recordAnswer(PlayerHandler player, Answer answer) {
         playerAnswers.computeIfAbsent(player, k -> new ArrayList<>()).add(answer);
         System.out.println("Recorded answer from " + player.getUsername() +
-                " for question " + answer.getQuestionIndex());
+                ". Total answers: " + playerAnswers.get(player).size() +
+                "/" + questions.size());
     }
 
-    public boolean isComplete() {
-        return playerAnswers.size() == 2 &&
-                playerAnswers.values().stream().allMatch(answers ->
-                        answers.size() == questions.size());
+
+
+    public void setQuestions(List<Question> questions) {
+        this.questions.clear();
+        this.questions.addAll(questions);
+        System.out.println("Set questions for round. Questions size: " + this.questions.size());
     }
+
+
 
     public RoundResult getResult() {
         Map<PlayerHandler, Integer> scores = new HashMap<>();
@@ -59,8 +89,5 @@ public class Round implements Serializable {
         return score;
     }
 
-    public void setQuestions(List<Question> questions) {
-        this.questions.clear();
-        this.questions.addAll(questions);
-    }
+
 }

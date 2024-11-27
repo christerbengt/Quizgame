@@ -64,16 +64,6 @@ public class Server {
         }
     }
 
-    public void removePlayer(PlayerHandler player) {
-        if (player.getUsername() != null) {
-            players.remove(player.getUsername());
-            waitingPlayers.remove(player);
-            System.out.println("Player removed: " + player.getUsername());
-            System.out.println("Current players: " + players.size());
-            System.out.println("Waiting players: " + waitingPlayers.size());
-        }
-    }
-
     public static void main(String[] args) {
         Server server = new Server();
         server.start();

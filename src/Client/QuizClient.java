@@ -6,10 +6,13 @@ import Server.*;
 import javax.swing.*;
 import javax.swing.Timer;
 import java.awt.*;
+import java.awt.desktop.SystemEventListener;
 import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.List;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class QuizClient {
     private static final String SERVER_ADDRESS = "127.0.0.1";
@@ -103,19 +106,18 @@ public class QuizClient {
         mainPanel.repaint();
     }
 
-    // Method to display the category panel
+
     private void showCategoryPanel(List<Category> categories) {
         mainPanel.removeAll();
 
-        JPanel categoryPanel = new JPanel(new BorderLayout());
         JPanel centerPanel1 = new JPanel(new GridBagLayout());
-        JPanel answerPanel = new JPanel(new GridLayout(4, 1, 20, 20)); // 4 buttons in a single column with spacing
-
+        JPanel answerPanel = new JPanel();
+        answerPanel.setLayout(new GridLayout(4, 1,10,10));
 
         ArrayList<JButton> answerButtons = new ArrayList<>();
         for (Category category : categories) {
             JButton categoryButton = new JButton(category.toString());
-            categoryButton.addActionListener(e -> handleCategorySelection(category)); // Set action listener
+            categoryButton.addActionListener(e -> handleCategorySelection(category));// Set action listener
             answerButtons.add(categoryButton);
         }
 
@@ -124,21 +126,23 @@ public class QuizClient {
         }
 
         centerPanel1.add(answerPanel);
-        categoryPanel.add(centerPanel1, BorderLayout.CENTER);
+        mainPanel.add(centerPanel1, BorderLayout.CENTER);
+
 
         JPanel questionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         JLabel questionLabel = new JLabel("Pick a category:", SwingConstants.CENTER);
         questionLabel.setFont(new Font("Arial", Font.PLAIN, 18));
         questionPanel.add(questionLabel);
-        categoryPanel.add(questionPanel, BorderLayout.NORTH);
+        mainPanel.add(questionPanel, BorderLayout.NORTH);
 
-        mainPanel.add(categoryPanel, BorderLayout.CENTER);
         mainPanel.revalidate();
         mainPanel.repaint();
     }
 
-    private void handleCategorySelection(Category category) {
+    void handleCategorySelection(Category category) {
         try {
+            System.out.println("Selected category: " + category);
+
             sendMessage(new Message(MessageType.CATEGORY_SELECTED, category));
         } catch (IOException e) {
             e.printStackTrace();
@@ -232,6 +236,8 @@ public class QuizClient {
     private void handleServerMessage(Message message) {
         SwingUtilities.invokeLater(() -> {
             try {
+                System.out.println("Received message of type: " + message.getType());
+
                 switch (message.getType()) {
                     case GAME_START -> {
                         System.out.println("Game starting");
@@ -243,7 +249,7 @@ public class QuizClient {
                         mainPanel.repaint();
                     }
                     case CATEGORY_SELECTED -> {
-                        List<Category> categories =  Category.randomCategories();
+                        List<Category> categories = (List<Category>) message.getContent();
                         showCategoryPanel(categories);
                     }
                     case ROUND_START -> {
@@ -251,20 +257,20 @@ public class QuizClient {
                         currentQuestions = (List<Question>) message.getContent();
                         currentQuestionIndex = 0;
 
-                        // Clear the main panel and create a new question panel
                         mainPanel.removeAll();
-                        createQuestionPanel(); // This will create a fresh question panel
+                        createQuestionPanel();
                         mainPanel.add(questionPanel);
                         mainPanel.revalidate();
                         mainPanel.repaint();
 
-                        // Start displaying questions
                         displayQuestion();
                     }
                     case ROUND_RESULT -> {
-                        System.out.println("Received round " + currentRound + " results");
+                        System.out.println("DEBUG: Received ROUND_RESULT message");
+                        System.out.println("DEBUG: Current round before increment: " + currentRound);
                         handleRoundResult((RoundResult) message.getContent());
                         currentRound++;
+                        System.out.println("DEBUG: Current round after increment: " + currentRound);
                     }
                     case GAME_END -> {
                         System.out.println("Game ending");
@@ -356,6 +362,7 @@ public class QuizClient {
             displayQuestion();
         } else {
             try {
+                System.out.println("Sending ROUND_COMPLETE signal for round " + currentRound);
                 sendMessage(new Message(MessageType.ROUND_COMPLETE, null));
             } catch (IOException e) {
                 e.printStackTrace();
@@ -364,6 +371,7 @@ public class QuizClient {
     }
 
     private void handleRoundResult(RoundResult result) {
+        System.out.println("Handling round " + currentRound + " results");
         mainPanel.removeAll();
         JPanel resultPanel = new JPanel(new BorderLayout());
         resultPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
@@ -387,25 +395,24 @@ public class QuizClient {
         paddedScoresPanel.add(scoresPanel, BorderLayout.CENTER);
         resultPanel.add(paddedScoresPanel, BorderLayout.CENTER);
 
-        // Add waiting panel if not the final round
         if (currentRound < 3) {
             JPanel waitingPanel = new JPanel();
             waitingPanel.setLayout(new BoxLayout(waitingPanel, BoxLayout.Y_AXIS));
 
-            // Create a panel for the waiting message and dots
+            // Create a panel for the waiting message and countdown
             JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-            JLabel waitingLabel = new JLabel("Waiting for next round");
+            JLabel waitingLabel = new JLabel("Next round starts in: ");
             waitingLabel.setFont(new Font("Arial", Font.ITALIC, 14));
-            JLabel dotsLabel = new JLabel("...");
-            dotsLabel.setFont(new Font("Arial", Font.ITALIC, 14));
+            JLabel countdownLabel = new JLabel("5");
+            countdownLabel.setFont(new Font("Arial", Font.BOLD, 14));
             messagePanel.add(waitingLabel);
-            messagePanel.add(dotsLabel);
+            messagePanel.add(countdownLabel);
 
             // Create loading bar panel
             JProgressBar progressBar = new JProgressBar();
             progressBar.setIndeterminate(true);
             progressBar.setPreferredSize(new Dimension(200, 20));
-            progressBar.setString("Waiting for other player");
+            progressBar.setString("Preparing next round");
             progressBar.setStringPainted(true);
 
             // Add components to waiting panel
@@ -413,14 +420,23 @@ public class QuizClient {
             waitingPanel.add(Box.createVerticalStrut(10));
             waitingPanel.add(progressBar);
 
-            // Animate the dots
-            Timer dotTimer = new Timer(500, e -> {
-                String dots = dotsLabel.getText();
-                dotsLabel.setText(dots.length() >= 3 ? "." : dots + ".");
-            });
-            dotTimer.start();
+            final int[] timeLeft = {5};
+            Timer countdownTimer = new Timer(1000, null);
+            countdownTimer.addActionListener(e -> {
+                timeLeft[0]--;
+                countdownLabel.setText(String.valueOf(timeLeft[0]));
 
-            // Add the waiting panel to the result panel
+                if (timeLeft[0] <= 0) {
+                    countdownTimer.stop();
+                    try {
+                        sendMessage(new Message(MessageType.ROUND_COMPLETE, null));
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            });
+            countdownTimer.start();
+
             JPanel spacedWaitingPanel = new JPanel(new BorderLayout());
             spacedWaitingPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
             spacedWaitingPanel.add(waitingPanel, BorderLayout.CENTER);
@@ -433,6 +449,7 @@ public class QuizClient {
 
         // If this was the final round, show a countdown to game end
         if (currentRound == 3) {
+            System.out.println("All rounds complete. Waiting for final game result...");
             Timer endTimer = new Timer(2000, e -> {
                 JLabel endingLabel = new JLabel("Calculating final results...", SwingConstants.CENTER);
                 endingLabel.setFont(new Font("Arial", Font.BOLD, 16));
@@ -489,7 +506,6 @@ public class QuizClient {
 
         endPanel.add(finalScoresPanel, BorderLayout.CENTER);
 
-        // Play Again button
         JButton newGameButton = new JButton("Play Again");
         newGameButton.setFont(new Font("Arial", Font.BOLD, 16));
         newGameButton.setBackground(new Color(52, 152, 219));
