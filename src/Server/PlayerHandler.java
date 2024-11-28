@@ -53,6 +53,7 @@ public class PlayerHandler implements Runnable, Serializable {
             try {
                 Message message = (Message) in.readObject();
                 System.out.println("Received message from " + username + ": " + message.getType());
+
                 if (currentGame != null) {
                     currentGame.handleMessage(this, message);
                 } else {

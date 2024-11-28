@@ -79,7 +79,6 @@ public class QuestionDatabase {
     }
 
     private void loadDefaultQuestions() {
-        // Add default questions for each category
         addDefaultQuestion(Category.HISTORY, "Which year did World War II end?",
                 Arrays.asList("1943", "1944", "1945", "1946"), 2);
 
@@ -95,7 +94,7 @@ public class QuestionDatabase {
         addDefaultQuestion(Category.MATH, "What is the square root of 144?",
                 Arrays.asList("10", "11", "12", "13"), 2);
 
-        // Print the loaded default questions
+
         for (Category category : Category.values()) {
             System.out.println("Category " + category + " has " + questions.get(category).size() + " default questions");
         }
@@ -106,8 +105,7 @@ public class QuestionDatabase {
         System.out.println("Added default question for category " + category + ": " + questionText);
     }
 
-    public List<Question> getQuestionsForRound(int count) {
-        Category category = getRandomCategory();
+    public List<Question> getQuestionsForRound(Category category, int count) {
         List<Question> categoryQuestions = new ArrayList<>(questions.get(category));
 
         if (categoryQuestions.isEmpty()) {
@@ -116,7 +114,6 @@ public class QuestionDatabase {
         }
 
         Collections.shuffle(categoryQuestions);
-        // Create a new ArrayList instead of using subList
         List<Question> selectedQuestions = new ArrayList<>();
         for (int i = 0; i < Math.min(count, categoryQuestions.size()); i++) {
             selectedQuestions.add(categoryQuestions.get(i));
@@ -126,7 +123,7 @@ public class QuestionDatabase {
         return selectedQuestions;
     }
 
-    private List<Question> loadEmergencyQuestions(int count) {
+    public List<Question> loadEmergencyQuestions(int count) {
         List<Question> emergencyQuestions = new ArrayList<>();
         for (int i = 0; i < count; i++) {
             emergencyQuestions.add(new Question(
