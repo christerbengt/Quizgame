@@ -55,7 +55,6 @@ public class PlayerHandler implements Runnable, Serializable {
                 System.out.println("Received message from " + username + ": " + message.getType());
 
                 if (currentGame != null) {
-                    // Let the Game class handle all messages through its handleMessage method
                     currentGame.handleMessage(this, message);
                 } else {
                     System.out.println("No current game for player: " + username);

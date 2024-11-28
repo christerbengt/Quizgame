@@ -13,10 +13,9 @@ public class Round implements Serializable {
     private final Category category;
 
     public Round(List<Question> questions, Category category) {
-        this.questions = new ArrayList<>(questions); // Create new ArrayList with the questions
+        this.questions = new ArrayList<>(questions); // Create new ArrayList with questions
         this.category = category;
         this.playerAnswers = new HashMap<>();
-        System.out.println("Created new round with " + questions.size() + " questions");
     }
 
     public List<Question> getQuestions() {
@@ -24,9 +23,6 @@ public class Round implements Serializable {
     }
 
     public boolean isComplete() {
-        System.out.println("Checking round completion:");
-        System.out.println("- Total questions: " + questions.size());
-        System.out.println("- Players answered: " + playerAnswers.size());
 
         if (questions.isEmpty()) {
             System.out.println("Warning: Round has no questions!");
@@ -37,8 +33,6 @@ public class Round implements Serializable {
         boolean allQuestionsAnswered = playerAnswers.values().stream()
                 .allMatch(answers -> answers.size() == questions.size());
 
-        System.out.println("- Both players answered: " + bothPlayersAnswered);
-        System.out.println("- All questions answered: " + allQuestionsAnswered);
 
         return bothPlayersAnswered && allQuestionsAnswered;
     }
@@ -59,7 +53,6 @@ public class Round implements Serializable {
     public void setQuestions(List<Question> questions) {
         this.questions.clear();
         this.questions.addAll(questions);
-        System.out.println("Set questions for round. Questions size: " + this.questions.size());
     }
 
 

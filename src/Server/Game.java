@@ -42,7 +42,7 @@ public class Game {
     private void initializeGame() {
         System.out.println("Initializing game with " + properties.getRoundCount() + " rounds");
         for (int i = 0; i < properties.getRoundCount(); i++) {
-            rounds.add(new Round(new ArrayList<>(), Category.HISTORY)); // Initialize with a default category
+            rounds.add(new Round(new ArrayList<>(), Category.HISTORY));
         }
     }
 
@@ -68,18 +68,12 @@ public class Game {
 
 
     public void handleCategorySelection(PlayerHandler player, Category selectedCategory) {
-        System.out.println("Category chosen by " + player.getUsername() + ": " + selectedCategory);
-
-        // Get questions for the round
         List<Question> questions = questionDB.getQuestionsForRound(selectedCategory, properties.getQuestionsPerRound());
-        System.out.println("Selected " + questions.size() + " questions for category " + selectedCategory);
 
-        // Create a new round with the questions
         Round currentRound = new Round(questions, selectedCategory);
         rounds.set(currentRoundIndex, currentRound);
 
         try {
-            // Send questions to both players
             Message roundStartMessage = new Message(MessageType.ROUND_START, questions);
             player1.sendMessage(roundStartMessage);
             player2.sendMessage(roundStartMessage);
@@ -105,13 +99,12 @@ public class Game {
             System.out.println("Both players completed round " + (currentRoundIndex + 1));
             sendRoundResults();
 
-            // Add delay before starting the next round
             currentRoundIndex++;
             if (currentRoundIndex < rounds.size()) {
                 System.out.println("Starting next round after delay");
                 new Thread(() -> {
                     try {
-                        Thread.sleep(5000); // Wait for 5 seconds
+                        Thread.sleep(3000);
                         startNextRound();
                     } catch (InterruptedException | IOException e) {
                         e.printStackTrace();

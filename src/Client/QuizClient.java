@@ -15,8 +15,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class QuizClient {
-    private static final String SERVER_ADDRESS = "127.0.0.1";
-    private static final int SERVER_PORT = 55555;
+    private final String SERVER_ADDRESS = "localhost";
+    private final int SERVER_PORT = 12649;
     private ObjectOutputStream out;
     private ObjectInputStream in;
     private Socket socket;
@@ -236,8 +236,6 @@ public class QuizClient {
     private void handleServerMessage(Message message) {
         SwingUtilities.invokeLater(() -> {
             try {
-                System.out.println("Received message of type: " + message.getType());
-
                 switch (message.getType()) {
                     case GAME_START -> {
                         System.out.println("Game starting");
@@ -288,7 +286,6 @@ public class QuizClient {
         if (currentQuestionIndex < currentQuestions.size()) {
             Question question = currentQuestions.get(currentQuestionIndex);
 
-            // Update question display with question number
             questionLabel.setText("<html><div style='text-align: center; padding: 10px;'>" +
                     "Question " + (currentQuestionIndex + 1) + " of " + currentQuestions.size() +
                     "<br><br>" + question.getText() + "</div></html>");
@@ -334,7 +331,6 @@ public class QuizClient {
         try {
             sendMessage(new Message(MessageType.ANSWER, new Answer(currentQuestionIndex, selectedOption)));
 
-            // Visual feedback
             Question currentQuestion = currentQuestions.get(currentQuestionIndex);
             if (selectedOption == currentQuestion.getCorrectOptionIndex()) {
                 answerButtons.get(selectedOption).setBackground(Color.GREEN);
@@ -343,10 +339,8 @@ public class QuizClient {
                 answerButtons.get(currentQuestion.getCorrectOptionIndex()).setBackground(Color.GREEN);
             }
 
-            // Disable buttons after answer
             answerButtons.forEach(button -> button.setEnabled(false));
 
-            // Wait briefly before moving to next question
             javax.swing.Timer transitionTimer = new javax.swing.Timer(1000, e -> moveToNextQuestion());
             transitionTimer.setRepeats(false);
             transitionTimer.start();
@@ -362,7 +356,6 @@ public class QuizClient {
             displayQuestion();
         } else {
             try {
-                System.out.println("Sending ROUND_COMPLETE signal for round " + currentRound);
                 sendMessage(new Message(MessageType.ROUND_COMPLETE, null));
             } catch (IOException e) {
                 e.printStackTrace();
@@ -371,7 +364,6 @@ public class QuizClient {
     }
 
     private void handleRoundResult(RoundResult result) {
-        System.out.println("Handling round " + currentRound + " results");
         mainPanel.removeAll();
         JPanel resultPanel = new JPanel(new BorderLayout());
         resultPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
@@ -394,7 +386,6 @@ public class QuizClient {
         mainPanel.revalidate();
         mainPanel.repaint();
 
-        // Delay for 5 seconds before proceeding
         new Timer(5000, e -> {
             ((Timer) e.getSource()).stop();
             if (currentRound < 3) {
@@ -412,17 +403,17 @@ public class QuizClient {
         JPanel endPanel = new JPanel(new BorderLayout());
         endPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Game Over title
+
         JLabel titleLabel = new JLabel("Game Over!", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         titleLabel.setForeground(new Color(44, 62, 80));
         endPanel.add(titleLabel, BorderLayout.NORTH);
 
-        // Final scores panel
+
         JPanel finalScoresPanel = new JPanel(new GridLayout(0, 1, 10, 10));
         finalScoresPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
 
-        // Add final scores with styled labels
+
         result.getScores().forEach((player, score) -> {
             JLabel scoreLabel = new JLabel(player + ": " + score, SwingConstants.CENTER);
             scoreLabel.setFont(new Font("Arial", Font.BOLD, 18));

@@ -11,15 +11,6 @@ public enum Category {
     LITERATURE,
     MATH;
 
-    public static Category fromString(String category) {
-        try {
-            return valueOf(category.toUpperCase().trim());
-        } catch (IllegalArgumentException e) {
-            System.err.println("Invalid category: " + category);
-            return HISTORY; // Default category
-        }
-    }
-
     public static List<Category> randomCategories() {
 
         List<Category> categoryList = new ArrayList<>(List.of(Category.values()));

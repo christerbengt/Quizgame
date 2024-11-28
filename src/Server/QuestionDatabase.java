@@ -79,7 +79,6 @@ public class QuestionDatabase {
     }
 
     private void loadDefaultQuestions() {
-        // Add default questions for each category
         addDefaultQuestion(Category.HISTORY, "Which year did World War II end?",
                 Arrays.asList("1943", "1944", "1945", "1946"), 2);
 
@@ -95,7 +94,7 @@ public class QuestionDatabase {
         addDefaultQuestion(Category.MATH, "What is the square root of 144?",
                 Arrays.asList("10", "11", "12", "13"), 2);
 
-        // Print the loaded default questions
+
         for (Category category : Category.values()) {
             System.out.println("Category " + category + " has " + questions.get(category).size() + " default questions");
         }
@@ -125,7 +124,6 @@ public class QuestionDatabase {
     }
 
     public List<Question> loadEmergencyQuestions(int count) {
-        System.out.println("Loading emergency questions.");
         List<Question> emergencyQuestions = new ArrayList<>();
         for (int i = 0; i < count; i++) {
             emergencyQuestions.add(new Question(
