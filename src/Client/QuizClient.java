@@ -58,28 +58,22 @@ public class QuizClient {
 
         JMenuBar menuBar = new JMenuBar();
         JMenu settingsMenu = new JMenu("Settings");
+        JMenuItem redItem = new JMenuItem("Red");
+        JMenuItem greenItem = new JMenuItem("Green");
+        JMenuItem blueItem = new JMenuItem("Blue");
 
-        String[] colors = {"Red", "Green", "Blue"};
-        JComboBox<String> colorDropdown = new JComboBox<>(colors);
+        // Add action listeners for color menu items
+        redItem.addActionListener(e -> changePanelBackgroundColor(Color.RED));
+        greenItem.addActionListener(e -> changePanelBackgroundColor(Color.GREEN));
+        blueItem.addActionListener(e -> changePanelBackgroundColor(Color.BLUE));
 
-        // Add an ActionListener to change the color based on selection
-        colorDropdown.addActionListener(e -> {
-            String selectedColor = (String) colorDropdown.getSelectedItem();
-            switch (selectedColor) {
-                case "Red":
-                    changePanelBackground(Color.RED);
-                    break;
-                case "Green":
-                    changePanelBackground(Color.GREEN);
-                    break;
-                case "Blue":
-                    changePanelBackground(Color.BLUE);
-                    break;
-            }
-        });
-
-        settingsMenu.add(colorDropdown);
+        // Add menu items to menu
+        settingsMenu.add(redItem);
+        settingsMenu.add(greenItem);
+        settingsMenu.add(blueItem);
         menuBar.add(settingsMenu);
+
+        // Set menu bar
         frame.setJMenuBar(menuBar);
 
         mainPanel = new JPanel(new BorderLayout());
@@ -88,32 +82,20 @@ public class QuizClient {
         frame.setVisible(true);
     }
 
-    public Color getBackgroundColor() {
-        return backgroundColor;
-    }
-
-    public void setBackgroundColor(Color backgroundColor) {
-        this.backgroundColor = backgroundColor;
-    }
-
-    private void changePanelBackground(Color color) {
-        updatePanelColor(mainPanel, color);
-        updatePanelColor(questionPanel, color);
-        updatePanelColor(scorePanel, color);
-        updatePanelColor(loginPanel, color);
+    private void changePanelBackgroundColor(Color color) {
+        mainPanel.setBackground(color);
+        if (questionPanel != null) {
+            questionPanel.setBackground(color);
+        }
+        // You can add other panels you wish to change the color for
         frame.revalidate();
         frame.repaint();
-    }
-
-    private void updatePanelColor(JPanel panel, Color color) {
-        panel.setBackground(color);
     }
 
     private void createLoginPanel() {
         JPanel loginPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
-        updatePanelColor(loginPanel, getBackgroundColor());
 
         JLabel usernameLabel = new JLabel("Enter your username:");
         JTextField usernameField = new JTextField(20);
