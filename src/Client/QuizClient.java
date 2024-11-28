@@ -34,6 +34,7 @@ public class QuizClient {
     private final int TIMER_DELAY = 1000;
     private int timeLeft;
     private int currentRound = 1;
+    private Color backgroundColor;
 
     public QuizClient() {
         initializeConnection();
@@ -58,10 +59,40 @@ public class QuizClient {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(600, 400);
 
+        JMenuBar menuBar = new JMenuBar();
+        JMenu settingsMenu = new JMenu("Settings");
+        JMenuItem redItem = new JMenuItem("Red");
+        JMenuItem greenItem = new JMenuItem("Green");
+        JMenuItem blueItem = new JMenuItem("Blue");
+
+        // Add action listeners for color menu items
+        redItem.addActionListener(e -> changePanelBackgroundColor(Color.RED));
+        greenItem.addActionListener(e -> changePanelBackgroundColor(Color.GREEN));
+        blueItem.addActionListener(e -> changePanelBackgroundColor(Color.BLUE));
+
+        // Add menu items to menu
+        settingsMenu.add(redItem);
+        settingsMenu.add(greenItem);
+        settingsMenu.add(blueItem);
+        menuBar.add(settingsMenu);
+
+        // Set menu bar
+        frame.setJMenuBar(menuBar);
+
         mainPanel = new JPanel(new BorderLayout());
         createLoginPanel();
         frame.add(mainPanel);
         frame.setVisible(true);
+    }
+
+    private void changePanelBackgroundColor(Color color) {
+        mainPanel.setBackground(color);
+        if (questionPanel != null) {
+            questionPanel.setBackground(color);
+        }
+        // You can add other panels you wish to change the color for
+        frame.revalidate();
+        frame.repaint();
     }
 
     private void createLoginPanel() {
