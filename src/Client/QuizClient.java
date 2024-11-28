@@ -389,77 +389,22 @@ public class QuizClient {
             scoresPanel.add(scoreLabel);
         });
 
-        // Add padding around scores
-        JPanel paddedScoresPanel = new JPanel(new BorderLayout());
-        paddedScoresPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
-        paddedScoresPanel.add(scoresPanel, BorderLayout.CENTER);
-        resultPanel.add(paddedScoresPanel, BorderLayout.CENTER);
-
-        if (currentRound < 3) {
-            JPanel waitingPanel = new JPanel();
-            waitingPanel.setLayout(new BoxLayout(waitingPanel, BoxLayout.Y_AXIS));
-
-            // Create a panel for the waiting message and countdown
-            JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-            JLabel waitingLabel = new JLabel("Next round starts in: ");
-            waitingLabel.setFont(new Font("Arial", Font.ITALIC, 14));
-            JLabel countdownLabel = new JLabel("5");
-            countdownLabel.setFont(new Font("Arial", Font.BOLD, 14));
-            messagePanel.add(waitingLabel);
-            messagePanel.add(countdownLabel);
-
-            // Create loading bar panel
-            JProgressBar progressBar = new JProgressBar();
-            progressBar.setIndeterminate(true);
-            progressBar.setPreferredSize(new Dimension(200, 20));
-            progressBar.setString("Preparing next round");
-            progressBar.setStringPainted(true);
-
-            // Add components to waiting panel
-            waitingPanel.add(messagePanel);
-            waitingPanel.add(Box.createVerticalStrut(10));
-            waitingPanel.add(progressBar);
-
-            final int[] timeLeft = {5};
-            Timer countdownTimer = new Timer(1000, null);
-            countdownTimer.addActionListener(e -> {
-                timeLeft[0]--;
-                countdownLabel.setText(String.valueOf(timeLeft[0]));
-
-                if (timeLeft[0] <= 0) {
-                    countdownTimer.stop();
-                    try {
-                        sendMessage(new Message(MessageType.ROUND_COMPLETE, null));
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-                }
-            });
-            countdownTimer.start();
-
-            JPanel spacedWaitingPanel = new JPanel(new BorderLayout());
-            spacedWaitingPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
-            spacedWaitingPanel.add(waitingPanel, BorderLayout.CENTER);
-            resultPanel.add(spacedWaitingPanel, BorderLayout.SOUTH);
-        }
-
+        resultPanel.add(scoresPanel, BorderLayout.CENTER);
         mainPanel.add(resultPanel);
         mainPanel.revalidate();
         mainPanel.repaint();
 
-        // If this was the final round, show a countdown to game end
-        if (currentRound == 3) {
-            System.out.println("All rounds complete. Waiting for final game result...");
-            Timer endTimer = new Timer(2000, e -> {
-                JLabel endingLabel = new JLabel("Calculating final results...", SwingConstants.CENTER);
-                endingLabel.setFont(new Font("Arial", Font.BOLD, 16));
-                resultPanel.add(endingLabel, BorderLayout.SOUTH);
-                mainPanel.revalidate();
-                mainPanel.repaint();
-            });
-            endTimer.setRepeats(false);
-            endTimer.start();
-        }
+        // Delay for 5 seconds before proceeding
+        new Timer(5000, e -> {
+            ((Timer) e.getSource()).stop();
+            if (currentRound < 3) {
+                try {
+                    sendMessage(new Message(MessageType.ROUND_COMPLETE, null));
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }).start();
     }
 
     private void handleGameEnd(GameResult result) {

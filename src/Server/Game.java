@@ -104,11 +104,19 @@ public class Game {
         if (currentRound.isComplete()) {
             System.out.println("Both players completed round " + (currentRoundIndex + 1));
             sendRoundResults();
-            currentRoundIndex++;
 
+            // Add delay before starting the next round
+            currentRoundIndex++;
             if (currentRoundIndex < rounds.size()) {
-                System.out.println("Starting next round");
-                startNextRound();
+                System.out.println("Starting next round after delay");
+                new Thread(() -> {
+                    try {
+                        Thread.sleep(5000); // Wait for 5 seconds
+                        startNextRound();
+                    } catch (InterruptedException | IOException e) {
+                        e.printStackTrace();
+                    }
+                }).start();
             } else {
                 System.out.println("All rounds complete, ending game");
                 endGame();
