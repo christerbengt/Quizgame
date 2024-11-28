@@ -9,7 +9,7 @@ import java.net.*;
 public class PlayerHandler implements Runnable, Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
-
+    // Transient means the variable is not serialized
     private transient Socket socket;
     private transient Server server;
     private transient ObjectOutputStream out;

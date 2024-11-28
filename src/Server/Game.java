@@ -53,9 +53,17 @@ public class Game {
         player2.sendMessage(gameStartMessage);
     }
 
+    private void handlePlayerForfeit(PlayerHandler forfeitingPlayer) throws IOException {
+        PlayerHandler winner = (forfeitingPlayer == player1) ? player2 : player1;
+        Map<PlayerHandler, Integer> finalScores = new HashMap<>();
+        finalScores.put(winner, 1);
+        finalScores.put(forfeitingPlayer, 0);
+        endGameWithResult(new GameResult(finalScores, winner)); // Changed method name
+    }
+
     private void startNextRound() throws IOException {
         if (currentRoundIndex >= rounds.size()) {
-            endGame();
+            endGameWithResult(calculateGameResult());
             return;
         }
 
@@ -90,6 +98,15 @@ public class Game {
         System.out.println("Recorded answer from " + player.getUsername() + " for question " + answer.getQuestionIndex());
     }
 
+    private void handleForfeit(PlayerHandler forfeitingPlayer) throws IOException {
+        PlayerHandler winner = (forfeitingPlayer == player1) ? player2 : player1;
+        Map<PlayerHandler, Integer> finalScores = new HashMap<>();
+        finalScores.put(winner, 1);
+        finalScores.put(forfeitingPlayer, 0);
+        GameResult result = new GameResult(finalScores, winner);
+        endGameWithResult(calculateGameResult());
+    }
+
     public synchronized void handleRoundComplete(PlayerHandler player) throws IOException {
         Round currentRound = rounds.get(currentRoundIndex);
         System.out.println("Round complete signal from " + player.getUsername() +
@@ -112,7 +129,7 @@ public class Game {
                 }).start();
             } else {
                 System.out.println("All rounds complete, ending game");
-                endGame();
+                endGameWithResult(calculateGameResult());
             }
         } else {
             System.out.println("Waiting for other player to complete round");
@@ -123,6 +140,7 @@ public class Game {
     public void handleMessage(PlayerHandler player, Message message) throws IOException {
         System.out.println("Handling message from " + player.getUsername() + ": " + message.getType());
         switch (message.getType()) {
+            case FORFEIT -> handlePlayerForfeit(player);
             case ROUND_COMPLETE -> handleRoundComplete(player);
             case CATEGORY_SELECTED -> {
                 Category selectedCategory = (Category) message.getContent();
@@ -179,9 +197,8 @@ public class Game {
         return new GameResult(finalScores, winner);
     }
 
-    private void endGame() throws IOException {
+    private void endGameWithResult(GameResult result) throws IOException {
         System.out.println("Game ending");
-        GameResult result = calculateGameResult();
         Message gameEndMessage = new Message(MessageType.GAME_END, result);
         player1.sendMessage(gameEndMessage);
         player2.sendMessage(gameEndMessage);

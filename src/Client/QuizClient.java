@@ -189,6 +189,24 @@ public class QuizClient {
         // Create header panel
         JPanel headerPanel = new JPanel(new BorderLayout());
 
+        JButton forfeitButton = new JButton("Forfeit Game");
+        forfeitButton.setBackground(new Color(231, 76, 60));
+        forfeitButton.setForeground(Color.WHITE);
+        forfeitButton.addActionListener(e -> {
+            int confirm = JOptionPane.showConfirmDialog(frame,
+                    "Are you sure you want to forfeit? Your opponent will win.",
+                    "Confirm Forfeit",
+                    JOptionPane.YES_NO_OPTION);
+            if (confirm == JOptionPane.YES_OPTION) {
+                try {
+                    sendMessage(new Message(MessageType.FORFEIT, null));
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+        headerPanel.add(forfeitButton, BorderLayout.EAST);
+
         // Round indicator
         JLabel roundLabel = new JLabel("Round " + currentRound + " of 3", SwingConstants.CENTER);
         roundLabel.setFont(new Font("Arial", Font.BOLD, 18));
@@ -227,6 +245,8 @@ public class QuizClient {
                     BorderFactory.createLineBorder(new Color(200, 200, 200)),
                     BorderFactory.createEmptyBorder(10, 10, 10, 10)
             ));
+
+
             final int index = i;
             button.addActionListener(e -> handleAnswer(index));
             answerButtons.add(button);

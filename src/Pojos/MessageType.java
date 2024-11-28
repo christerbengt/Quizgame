@@ -8,6 +8,7 @@ public enum MessageType {
     ANSWER,
     ROUND_COMPLETE,
     ROUND_RESULT,
+    FORFEIT,
     GAME_END
 }
 
