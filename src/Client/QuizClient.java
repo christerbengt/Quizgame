@@ -31,6 +31,7 @@ public class QuizClient {
     private final int TIMER_DELAY = 1000;
     private int timeLeft;
     private int currentRound = 1;
+    private Color backgroundColor;
 
     public QuizClient() {
         initializeConnection();
@@ -77,6 +78,7 @@ public class QuizClient {
             }
         });
 
+        settingsMenu.add(colorDropdown);
         menuBar.add(settingsMenu);
         frame.setJMenuBar(menuBar);
 
@@ -86,29 +88,32 @@ public class QuizClient {
         frame.setVisible(true);
     }
 
+    public Color getBackgroundColor() {
+        return backgroundColor;
+    }
+
+    public void setBackgroundColor(Color backgroundColor) {
+        this.backgroundColor = backgroundColor;
+    }
+
     private void changePanelBackground(Color color) {
-        updatePanelColor(color);
+        updatePanelColor(mainPanel, color);
+        updatePanelColor(questionPanel, color);
+        updatePanelColor(scorePanel, color);
+        updatePanelColor(loginPanel, color);
         frame.revalidate();
         frame.repaint();
     }
 
-    private void updatePanelColor(Color color) {
-        mainPanel.setBackground(color);
-        if (questionPanel != null) {
-            questionPanel.setBackground(color);
-        }
-        if (categoryPanel != null) {
-            categoryPanel.setBackground(color);
-        }
-        if (scoreboardPanel != null) {
-            scoreboardPanel.setBackground(color);
-        }
+    private void updatePanelColor(JPanel panel, Color color) {
+        panel.setBackground(color);
     }
 
     private void createLoginPanel() {
         JPanel loginPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
+        updatePanelColor(loginPanel, getBackgroundColor());
 
         JLabel usernameLabel = new JLabel("Enter your username:");
         JTextField usernameField = new JTextField(20);
