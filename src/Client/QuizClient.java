@@ -57,17 +57,25 @@ public class QuizClient {
 
         JMenuBar menuBar = new JMenuBar();
         JMenu settingsMenu = new JMenu("Settings");
-        JMenuItem redItem = new JMenuItem("Red");
-        JMenuItem greenItem = new JMenuItem("Green");
-        JMenuItem blueItem = new JMenuItem("Blue");
 
-        redItem.addActionListener(e -> changePanelBackground(Color.RED));
-        greenItem.addActionListener(e -> changePanelBackground(Color.GREEN));
-        blueItem.addActionListener(e -> changePanelBackground(Color.BLUE));
+        String[] colors = {"Red", "Green", "Blue"};
+        JComboBox<String> colorDropdown = new JComboBox<>(colors);
 
-        settingsMenu.add(redItem);
-        settingsMenu.add(greenItem);
-        settingsMenu.add(blueItem);
+        // Add an ActionListener to change the color based on selection
+        colorDropdown.addActionListener(e -> {
+            String selectedColor = (String) colorDropdown.getSelectedItem();
+            switch (selectedColor) {
+                case "Red":
+                    changePanelBackground(Color.RED);
+                    break;
+                case "Green":
+                    changePanelBackground(Color.GREEN);
+                    break;
+                case "Blue":
+                    changePanelBackground(Color.BLUE);
+                    break;
+            }
+        });
 
         menuBar.add(settingsMenu);
         frame.setJMenuBar(menuBar);
@@ -79,12 +87,22 @@ public class QuizClient {
     }
 
     private void changePanelBackground(Color color) {
+        updatePanelColor(color);
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    private void updatePanelColor(Color color) {
         mainPanel.setBackground(color);
         if (questionPanel != null) {
             questionPanel.setBackground(color);
         }
-        frame.revalidate();
-        frame.repaint();
+        if (categoryPanel != null) {
+            categoryPanel.setBackground(color);
+        }
+        if (scoreboardPanel != null) {
+            scoreboardPanel.setBackground(color);
+        }
     }
 
     private void createLoginPanel() {
