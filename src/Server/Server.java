@@ -9,7 +9,7 @@ public class Server {
     private static final int PORT = 12649;
     private final ConcurrentHashMap<String, PlayerHandler> players = new ConcurrentHashMap<>();
     private final ConcurrentLinkedQueue<PlayerHandler> waitingPlayers = new ConcurrentLinkedQueue<>();
-    private final Set<Game> activeGames = Collections.newSetFromMap(new ConcurrentHashMap<>()); // Added this line
+    private final Set<Game> activeGames = Collections.newSetFromMap(new ConcurrentHashMap<>());
     private final GameProperties gameProperties;
     private final QuestionDatabase questionDB;
 

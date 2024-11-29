@@ -58,7 +58,7 @@ public class Game {
         Map<PlayerHandler, Integer> finalScores = new HashMap<>();
         finalScores.put(winner, 1);
         finalScores.put(forfeitingPlayer, 0);
-        endGameWithResult(new GameResult(finalScores, winner)); // Changed method name
+        endGameWithResult(new GameResult(finalScores, winner));
     }
 
     private void startNextRound() throws IOException {
