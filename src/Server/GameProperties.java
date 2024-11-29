@@ -15,7 +15,7 @@ public class GameProperties {
         try (InputStream input = new FileInputStream(PROPERTIES_FILE)) {
             properties.load(input);
         } catch (IOException e) {
-            // Use default values if properties file not found
+            // use default values if properties file not found.
             setDefaults();
         }
     }

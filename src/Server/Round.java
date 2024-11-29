@@ -18,9 +18,6 @@ public class Round implements Serializable {
         this.playerAnswers = new HashMap<>();
     }
 
-    public List<Question> getQuestions() {
-        return new ArrayList<>(questions);
-    }
 
     public boolean isComplete() {
 
@@ -37,9 +34,6 @@ public class Round implements Serializable {
         return bothPlayersAnswered && allQuestionsAnswered;
     }
 
-    public int getPlayerAnswersCount() {
-        return playerAnswers.size();
-    }
 
     public void recordAnswer(PlayerHandler player, Answer answer) {
         playerAnswers.computeIfAbsent(player, k -> new ArrayList<>()).add(answer);
@@ -47,15 +41,6 @@ public class Round implements Serializable {
                 ". Total answers: " + playerAnswers.get(player).size() +
                 "/" + questions.size());
     }
-
-
-
-    public void setQuestions(List<Question> questions) {
-        this.questions.clear();
-        this.questions.addAll(questions);
-    }
-
-
 
     public RoundResult getResult() {
         Map<PlayerHandler, Integer> scores = new HashMap<>();

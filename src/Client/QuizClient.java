@@ -6,13 +6,11 @@ import Server.*;
 import javax.swing.*;
 import javax.swing.Timer;
 import java.awt.*;
-import java.awt.desktop.SystemEventListener;
 import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.List;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+
 
 public class QuizClient {
     private final String SERVER_ADDRESS = "localhost";
@@ -90,7 +88,6 @@ public class QuizClient {
         if (questionPanel != null) {
             questionPanel.setBackground(color);
         }
-        // You can add other panels you wish to change the color for
         frame.revalidate();
         frame.repaint();
     }
@@ -225,10 +222,10 @@ public class QuizClient {
         infoPanel.add(scoreLabel);
         headerPanel.add(infoPanel, BorderLayout.CENTER);
 
-        // Add padding to header
+        // Add padding to header.
         headerPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
 
-        // Question display
+        // question display
         questionLabel = new JLabel();
         questionLabel.setHorizontalAlignment(JLabel.CENTER);
         questionLabel.setFont(new Font("Arial", Font.BOLD, 16));
@@ -253,7 +250,7 @@ public class QuizClient {
             buttonPanel.add(button);
         }
 
-        // Add everything to the question panel
+        // Add everything to the question panel.
         questionPanel.add(headerPanel, BorderLayout.NORTH);
         questionPanel.add(questionLabel, BorderLayout.CENTER);
 
@@ -519,6 +516,6 @@ public class QuizClient {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new QuizClient());
+        SwingUtilities.invokeLater(QuizClient::new);
     }
 }
